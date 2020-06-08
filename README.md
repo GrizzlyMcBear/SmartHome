@@ -8,6 +8,8 @@ A POC project for a smart home system, features would be added incrementally and
 ### Speech Recognition
 
 - [ ] Add a POC for a feature to recognize speech and convert it into string
+- [ ] Research the namespaces [System.Speech.Recognition](https://docs.microsoft.com/en-us/dotnet/api/system.speech.recognition?view=netframework-4.8) and
+[Microsoft.Speech.Recognition](https://docs.microsoft.com/en-us/previous-versions/office/developer/speech-technologies/dd167476(v=office.14)) and find the differences between them.
 - [ ] Design and implement a basic mechanism to turn that string into actions  
 i.e. add a new device to the home.  
 
@@ -26,7 +28,8 @@ i.e. add a new device to the home.
 
 ## Links
 
-- [x] An [MSDN article](https://docs.microsoft.com/en-us/archive/msdn-magazine/2019/june/speech-text-to-speech-synthesis-in-net) about TTS synthesis (June 2019)
+- [x] A [TTS synthesis MSDN article](https://docs.microsoft.com/en-us/archive/msdn-magazine/2019/june/speech-text-to-speech-synthesis-in-net) from June 2019
+- [ ] A [Speech recognition MSDN article](https://docs.microsoft.com/en-us/archive/msdn-magazine/2014/december/voice-recognition-speech-recognition-with-net-desktop-applications#adding-speech-to-a-console-application) from December 2014
 - [Voice Browser Working Group](w3.org/TR/speech-synthesis)
 - [Bing Translator](bing.com/translator)
 
