@@ -125,9 +125,15 @@ namespace Console_NetFramework
 			Choices basicControlCommandChoices = new Choices();
 			basicControlCommandChoices.Add("speech on");
 			basicControlCommandChoices.Add("speech off");
+			
 			basicControlCommandChoices.Add("test");
+			basicControlCommandChoices.Add("testing");
+			
+			basicControlCommandChoices.Add("clear text");
+			
 			basicControlCommandChoices.Add("exit application");
 			basicControlCommandChoices.Add("exit app");
+			basicControlCommandChoices.Add("shut down");
 
 			GrammarBuilder basicControlGrammarBuilder = new GrammarBuilder();
 			basicControlGrammarBuilder.Append(basicControlCommandChoices);
@@ -146,8 +152,7 @@ namespace Console_NetFramework
 			digitChoices.Add("0");
 
 			GrammarBuilder additionGrammarBuilder = new GrammarBuilder();
-			additionGrammarBuilder.Append("What is");
-			additionGrammarBuilder.Append("How much is");
+			additionGrammarBuilder.Append("what is");
 			additionGrammarBuilder.Append(digitChoices);
 			additionGrammarBuilder.Append("plus");
 			additionGrammarBuilder.Append(digitChoices);
@@ -164,6 +169,7 @@ namespace Console_NetFramework
 			try
 			{
 				InitializeSpeechRecognition();
+				SpeakAsync("I am awake");
 				while (done == false) {; }
 			}
 			catch (Exception ex)
@@ -201,12 +207,16 @@ namespace Console_NetFramework
 				WriteLine("Exiting application...");
 				Speak("Farewell");
 			}
-			if (txt.IndexOf("test") >= 0)
+			if (txt.IndexOf("clear text") >= 0)
+			{
+				Clear();
+			}
+			if (txt.IndexOf("test") >= 0 || txt.IndexOf("testing") >= 0)
 			{
 				WriteLine("Testing");
 				Speak("Testing");
 			}
-			if (txt.IndexOf("What") >= 0 && txt.IndexOf("plus") >= 0)
+			if (txt.IndexOf("what") >= 0 && txt.IndexOf("plus") >= 0)
 			{
 				string[] words = txt.Split(' ');
 				int num1 = int.Parse(words[2]);
@@ -235,9 +245,6 @@ namespace Console_NetFramework
 			//Testing_AppendTextWithHint();
 
 			SpeechRecognition();
-
-			Write("Press `Enter` to continue...");
-			ReadLine();
 		}
 	}
 }
