@@ -14,10 +14,12 @@ namespace Console_NetFramework
 	class Program
 	{
 		#region Members
-		
-		private static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
 
-		private static SpeechRecognitionEngine speechRecognitionEngine = new SpeechRecognitionEngine();
+		private static CultureInfo currentCulture;
+
+		private static SpeechSynthesizer synthesizer;
+
+		private static SpeechRecognitionEngine speechRecognitionEngine;
 
 		static bool done = false;
 		
@@ -25,6 +27,8 @@ namespace Console_NetFramework
 
 		private static Home home;
 
+		private static string[] options = { "speech on", "speech off", "hello", "clear text", "shut down"};
+		
 		#endregion Members
 
 		private static Home CreateHome()
@@ -44,9 +48,22 @@ namespace Console_NetFramework
 
 		private static void Initialize()
 		{
-			home = CreateHome();
+			try
+			{
+				home = CreateHome();
 
-			synthesizer.SetOutputToDefaultAudioDevice();
+				currentCulture = new CultureInfo("en-us");
+
+				synthesizer = new SpeechSynthesizer();
+				synthesizer.SetOutputToDefaultAudioDevice();
+
+				speechRecognitionEngine = new SpeechRecognitionEngine(currentCulture);
+				speechRecognitionEngine.SetInputToDefaultAudioDevice();
+			}
+			catch (Exception exception)
+			{
+				WriteLine($"Exception encountered: {exception.Message}");
+			}
 		}
 
 		#region TTS
@@ -119,21 +136,13 @@ namespace Console_NetFramework
 
 		private static void InitializeSpeechRecognition()
 		{
-			speechRecognitionEngine.SetInputToDefaultAudioDevice();
 			speechRecognitionEngine.SpeechRecognized += OnSpeechRecognized;
 
 			Choices basicControlCommandChoices = new Choices();
-			basicControlCommandChoices.Add("speech on");
-			basicControlCommandChoices.Add("speech off");
-			
-			basicControlCommandChoices.Add("test");
-			basicControlCommandChoices.Add("testing");
-			
-			basicControlCommandChoices.Add("clear text");
-			
-			basicControlCommandChoices.Add("exit application");
-			basicControlCommandChoices.Add("exit app");
-			basicControlCommandChoices.Add("shut down");
+			foreach (var option in options)
+			{
+				basicControlCommandChoices.Add(option);
+			}
 
 			GrammarBuilder basicControlGrammarBuilder = new GrammarBuilder();
 			basicControlGrammarBuilder.Append(basicControlCommandChoices);
@@ -168,8 +177,7 @@ namespace Console_NetFramework
 		{
 			try
 			{
-				InitializeSpeechRecognition();
-				SpeakAsync("I am awake");
+				SpeakAsync("Awaiting commands");
 				while (done == false) {; }
 			}
 			catch (Exception ex)
@@ -200,21 +208,20 @@ namespace Console_NetFramework
 			
 			if (speechOn == false) return;
 			
-			if (txt.IndexOf("exit app") >= 0 || txt.IndexOf("exit application") >= 0)
+			if (txt.IndexOf("shut down") >= 0)
 			{
 				((SpeechRecognitionEngine)sender).RecognizeAsyncCancel();
 				done = true;
-				WriteLine("Exiting application...");
-				Speak("Farewell");
+				WriteLine("Shutting down...");
+				Speak("Bye Bye");
 			}
 			if (txt.IndexOf("clear text") >= 0)
 			{
 				Clear();
 			}
-			if (txt.IndexOf("test") >= 0 || txt.IndexOf("testing") >= 0)
+			if (txt.IndexOf("hello") >= 0)
 			{
-				WriteLine("Testing");
-				Speak("Testing");
+				Speak("Hello to you, how are you today?");
 			}
 			if (txt.IndexOf("what") >= 0 && txt.IndexOf("plus") >= 0)
 			{
@@ -232,6 +239,7 @@ namespace Console_NetFramework
 		static void Main(string[] args)
 		{
 			Initialize();
+			InitializeSpeechRecognition();
 
 			// Print home details
 			//WriteLine(home);
