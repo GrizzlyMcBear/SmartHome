@@ -24,6 +24,10 @@ namespace WPF
 	{
 		private const string en = "en-US";
 
+		private const string en_regular = "en-US";
+
+		private const string en_question = "en-US";
+
 		private const string ru = "ru-RU";
 
 		private readonly IDictionary<string, string> _messagesByCulture = new Dictionary<string, string>();
@@ -37,6 +41,16 @@ namespace WPF
 		private void PromptInEnglish(object sender, RoutedEventArgs e)
 		{
 			DoPrompt(en);
+		}
+
+		private void PromptQuestionInEnglish(object sender, RoutedEventArgs e)
+		{
+			DoPrompt(en_question);
+		}
+
+		private void PromptRegularQuestionInEnglish(object sender, RoutedEventArgs e)
+		{
+			DoPrompt(en_regular);
 		}
 
 		private void PromptInRussian(object sender, RoutedEventArgs e)
@@ -59,6 +73,8 @@ namespace WPF
 		private void PopulateMessages()
 		{
 			_messagesByCulture[en] = "For the connection flight 123 to Saint Petersburg, please, proceed to gate A1";
+			_messagesByCulture[en_regular] = "Hello";
+			_messagesByCulture[en_question] = "Hello?";
 			_messagesByCulture[ru] = "Для пересадки на рейс 123 в  Санкт-Петербург, пожалуйста, пройдите к выходу A1";
 		}
 	}
