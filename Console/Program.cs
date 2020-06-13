@@ -134,41 +134,42 @@ namespace Console_NetFramework
 
 		#region Speech Recognition
 
-		private static void InitializeSpeechRecognition()
+		private static Grammar BuildBasicControlGrammar()
 		{
-			speechRecognitionEngine.SpeechRecognized += OnSpeechRecognized;
-
 			Choices basicControlCommandChoices = new Choices();
 			foreach (var option in options)
-			{
 				basicControlCommandChoices.Add(option);
-			}
 
 			GrammarBuilder basicControlGrammarBuilder = new GrammarBuilder();
 			basicControlGrammarBuilder.Append(basicControlCommandChoices);
-			Grammar basicControlGrammar = new Grammar(basicControlGrammarBuilder);
+
+			return new Grammar(basicControlGrammarBuilder);
+		}
+
+		private static Grammar BuildOperandsAdditionGrammar()
+		{
+			List<string> numbers = new List<string>();
+			for (int currOperand = 0; currOperand < 100; currOperand++)
+				numbers.Add(currOperand.ToString());
 			
-			Choices digitChoices = new Choices();
-			digitChoices.Add("1");
-			digitChoices.Add("2");
-			digitChoices.Add("3");
-			digitChoices.Add("4");
-			digitChoices.Add("5");
-			digitChoices.Add("6");
-			digitChoices.Add("7");
-			digitChoices.Add("8");
-			digitChoices.Add("9");
-			digitChoices.Add("0");
+			Choices operandsChoices = new Choices(numbers.ToArray());
 
 			GrammarBuilder additionGrammarBuilder = new GrammarBuilder();
 			additionGrammarBuilder.Append("what is");
-			additionGrammarBuilder.Append(digitChoices);
+			additionGrammarBuilder.Append(operandsChoices);
 			additionGrammarBuilder.Append("plus");
-			additionGrammarBuilder.Append(digitChoices);
-			Grammar additionGrammar = new Grammar(additionGrammarBuilder);
+			additionGrammarBuilder.Append(operandsChoices);
 
-			speechRecognitionEngine.LoadGrammarAsync(basicControlGrammar);
-			speechRecognitionEngine.LoadGrammarAsync(additionGrammar);
+			return new Grammar(additionGrammarBuilder);
+		}
+
+		private static void InitializeSpeechRecognition()
+		{
+			speechRecognitionEngine.SpeechRecognized += OnSpeechRecognized;
+			//speechRecognitionEngine.SpeechDetected//todo: research the `SpeechDetected` event
+
+			speechRecognitionEngine.LoadGrammarAsync(BuildBasicControlGrammar());
+			speechRecognitionEngine.LoadGrammarAsync(BuildOperandsAdditionGrammar());
 			
 			speechRecognitionEngine.RecognizeAsync(RecognizeMode.Multiple);
 		}
