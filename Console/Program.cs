@@ -27,7 +27,9 @@ namespace Console_NetFramework
 
 		private static Home home;
 
-		private static string[] options = { "speech on", "speech off", "hello", "clear text", "shut down" };
+		private static string[] systemOptions = { "speech on", "speech off", "shut down" };
+
+		private static string[] userActions = { "hello", "clear text", "add device" };
 
 		private static string[] operators = { "plus", "minus", "times", "divided by" };
 		
@@ -136,16 +138,28 @@ namespace Console_NetFramework
 
 		#region Speech Recognition
 
-		private static Grammar BuildBasicControlGrammar()
+		private static Grammar BuildSystemOptionsGrammar()
 		{
-			Choices basicControlCommandChoices = new Choices();
-			foreach (var option in options)
-				basicControlCommandChoices.Add(option);
+			Choices systemOptionsChoices = new Choices();
+			foreach (var option in systemOptions)
+				systemOptionsChoices.Add(option);
 
-			GrammarBuilder basicControlGrammarBuilder = new GrammarBuilder();
-			basicControlGrammarBuilder.Append(basicControlCommandChoices);
+			GrammarBuilder systemOptionsGrammarBuilder = new GrammarBuilder();
+			systemOptionsGrammarBuilder.Append(systemOptionsChoices);
 
-			return new Grammar(basicControlGrammarBuilder);
+			return new Grammar(systemOptionsGrammarBuilder);
+		}
+
+		private static Grammar BuildUserActionsGrammar()
+		{
+			Choices userActionsChoices = new Choices();
+			foreach (var action in userActions)
+				userActionsChoices.Add(action);
+
+			GrammarBuilder userActionsGrammarBuilder = new GrammarBuilder();
+			userActionsGrammarBuilder.Append(userActionsChoices);
+
+			return new Grammar(userActionsGrammarBuilder);
 		}
 
 		private static Grammar BuildOperandsAdditionGrammar()
@@ -171,8 +185,9 @@ namespace Console_NetFramework
 			speechRecognitionEngine.SpeechRecognized += OnSpeechRecognized;
 			//speechRecognitionEngine.SpeechDetected//todo: research the `SpeechDetected` event
 
-			speechRecognitionEngine.LoadGrammarAsync(BuildBasicControlGrammar());
+			speechRecognitionEngine.LoadGrammarAsync(BuildSystemOptionsGrammar());
 			speechRecognitionEngine.LoadGrammarAsync(BuildOperandsAdditionGrammar());
+			speechRecognitionEngine.LoadGrammarAsync(BuildUserActionsGrammar());
 			
 			speechRecognitionEngine.RecognizeAsync(RecognizeMode.Multiple);
 		}
@@ -195,8 +210,6 @@ namespace Console_NetFramework
 			string text = e.Result.Text;
 			float confidence = e.Result.Confidence;
 			
-			WriteLine("\nRecognized: " + text);
-
 			if (confidence < 0.60) return;
 			
 			if (text.IndexOf("speech on") >= 0)
@@ -218,16 +231,21 @@ namespace Console_NetFramework
 				done = true;
 				WriteLine("Shutting down...");
 				Speak("Bye Bye");
+				return;
 			}
+
+			var userMessage = "Unidentified command given";
+
 			if (text.IndexOf("clear text") >= 0)
 			{
 				Clear();
+				return;
 			}
-			if (text.IndexOf("hello") >= 0)
+			else if (text.IndexOf("hello") >= 0)
 			{
-				Speak("Hello to you, how are you today?");
+				userMessage = "Hello to you, how are you today?";
 			}
-			if (text.IndexOf("calculate") >= 0)
+			else if (text.IndexOf("calculate") >= 0)
 			{
 				string[] words = text.Split(' ');
 				
@@ -238,10 +256,16 @@ namespace Console_NetFramework
 					.Aggregate(string.Empty, (calculation, word) => calculation += word);
 				var result = DoOperation(num1, operation, num2);
 
-				var output = $"{num1} {operation} {num2} equals {result}";
-				WriteLine($"(Speaking: {output})");
-				SpeakAsync(output);
+				userMessage = $"{num1} {operation} {num2} equals {result}";
 			}
+			else if (text.IndexOf("add device") >= 0)
+			{
+				userMessage = "Adding a new device";
+				// add a new device
+			}
+
+			SpeakAsync(userMessage);
+			WriteLine(userMessage);
 		}
 
 		private static double DoOperation(int num1, string operation, int num2)
