@@ -27,7 +27,9 @@ namespace Console_NetFramework
 
 		private static Home home;
 
-		private static string[] options = { "speech on", "speech off", "hello", "clear text", "shut down"};
+		private static string[] options = { "speech on", "speech off", "hello", "clear text", "shut down" };
+
+		private static string[] operators = { "plus", "minus", "times", "divided by" };
 		
 		#endregion Members
 
@@ -153,11 +155,12 @@ namespace Console_NetFramework
 				numbers.Add(currOperand.ToString());
 			
 			Choices operandsChoices = new Choices(numbers.ToArray());
+			Choices operatorsChoices = new Choices(operators);
 
 			GrammarBuilder additionGrammarBuilder = new GrammarBuilder();
-			additionGrammarBuilder.Append("what is");
+			additionGrammarBuilder.Append("calculate");
 			additionGrammarBuilder.Append(operandsChoices);
-			additionGrammarBuilder.Append("plus");
+			additionGrammarBuilder.Append(operatorsChoices);
 			additionGrammarBuilder.Append(operandsChoices);
 
 			return new Grammar(additionGrammarBuilder);
@@ -189,19 +192,19 @@ namespace Console_NetFramework
 
 		private static void OnSpeechRecognized(object sender, SpeechRecognizedEventArgs e)
 		{
-			string txt = e.Result.Text;
+			string text = e.Result.Text;
 			float confidence = e.Result.Confidence;
 			
-			WriteLine("\nRecognized: " + txt);
+			WriteLine("\nRecognized: " + text);
 
 			if (confidence < 0.60) return;
 			
-			if (txt.IndexOf("speech on") >= 0)
+			if (text.IndexOf("speech on") >= 0)
 			{
 				WriteLine("Speech is now ON");
 				speechOn = true;
 			}
-			if (txt.IndexOf("speech off") >= 0)
+			if (text.IndexOf("speech off") >= 0)
 			{
 				WriteLine("Speech is now OFF");
 				speechOn = false;
@@ -209,29 +212,52 @@ namespace Console_NetFramework
 			
 			if (speechOn == false) return;
 			
-			if (txt.IndexOf("shut down") >= 0)
+			if (text.IndexOf("shut down") >= 0)
 			{
 				((SpeechRecognitionEngine)sender).RecognizeAsyncCancel();
 				done = true;
 				WriteLine("Shutting down...");
 				Speak("Bye Bye");
 			}
-			if (txt.IndexOf("clear text") >= 0)
+			if (text.IndexOf("clear text") >= 0)
 			{
 				Clear();
 			}
-			if (txt.IndexOf("hello") >= 0)
+			if (text.IndexOf("hello") >= 0)
 			{
 				Speak("Hello to you, how are you today?");
 			}
-			if (txt.IndexOf("what") >= 0 && txt.IndexOf("plus") >= 0)
+			if (text.IndexOf("calculate") >= 0)
 			{
-				string[] words = txt.Split(' ');
-				int num1 = int.Parse(words[2]);
-				int num2 = int.Parse(words[4]);
-				int sum = num1 + num2;
-				WriteLine("(Speaking: " + words[2] + " plus " + words[4] + " equals " + sum + ")");
-				SpeakAsync(words[2] + " plus " + words[4] + " equals " + sum);
+				string[] words = text.Split(' ');
+				
+				int num1 = int.Parse(words[1]);
+				int num2 = int.Parse(words[words.Length - 1]);
+				var operation = words.
+					Where((word, index) => index > 1 && index < words.Length - 1)
+					.Aggregate(string.Empty, (calculation, word) => calculation += word);
+				var result = DoOperation(num1, operation, num2);
+
+				var output = $"{num1} {operation} {num2} equals {result}";
+				WriteLine($"(Speaking: {output})");
+				SpeakAsync(output);
+			}
+		}
+
+		private static double DoOperation(int num1, string operation, int num2)
+		{
+			switch (operation)
+			{
+				case "plus":
+					return num1 + num2;
+				case "minus":
+					return num1 - num2;
+				case "times":
+					return num1 * num2;
+				case "divided by":
+					return num1 / num2;
+				default:
+					return 0;
 			}
 		}
 
